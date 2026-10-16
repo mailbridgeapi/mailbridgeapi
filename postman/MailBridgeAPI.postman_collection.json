@@ -1,0 +1,153 @@
+{
+  "info": {
+    "_postman_id": "1d137ac8-8a39-4b12-9448-mailbridgeapi",
+    "name": "MailBridgeAPI",
+    "description": "Send, receive, search, and monitor your own connected mailbox. Set accountKey and mailboxKey in the collection variables before running authenticated requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "https://api.mailbridgeapi.com"},
+    {"key": "accountKey", "value": ""},
+    {"key": "mailboxKey", "value": ""}
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health/"
+      }
+    },
+    {
+      "name": "Mailbox status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/mailbox/status/"
+      }
+    },
+    {
+      "name": "Send email",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key": "apikey", "value": "{{accountKey}}"},
+            {"key": "apikeybox", "value": "{{mailboxKey}}"},
+            {"key": "recipient_email", "value": "customer@example.com"},
+            {"key": "mail_subject", "value": "Hello from Postman"},
+            {"key": "mail_body", "value": "<p>Your mailbox is connected to MailBridgeAPI.</p>"},
+            {"key": "format", "value": "html"},
+            {"key": "from_source", "value": "postman"}
+          ]
+        },
+        "url": "{{baseUrl}}/sendemail/"
+      }
+    },
+    {
+      "name": "Received emails",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/email/received/?per_page=5"
+      }
+    },
+    {
+      "name": "Sent activity",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/email/sent/?per_page=25&status=all"
+      }
+    },
+    {
+      "name": "Search email",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/email/search/?query=order&direction=all"
+      }
+    },
+    {
+      "name": "Activity",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/email/activity/?days=30"
+      }
+    },
+    {
+      "name": "Validate email without sending",
+      "request": {
+        "method": "POST",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"},
+          {"key": "Content-Type", "value": "application/json"}
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"recipient_email\": \"customer@example.com\",\n  \"mail_subject\": \"Validation test\",\n  \"mail_body\": \"Hello\",\n  \"format\": \"text\"\n}"
+        },
+        "url": "{{baseUrl}}/email/validate/"
+      }
+    },
+    {
+      "name": "Direct IMAP retrieval",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/getemail/?apikey={{accountKey}}&apikeybox={{mailboxKey}}&mbox=INBOX&start=0"
+      }
+    },
+    {
+      "name": "Unsubscribe records",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/email/unsubscribed/?apikey={{accountKey}}&apikeybox={{mailboxKey}}"
+      }
+    },
+    {
+      "name": "Mailbox insights",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/mailbox/insights/?days=30"
+      }
+    },
+    {
+      "name": "Message detail",
+      "request": {
+        "method": "GET",
+        "header": [
+          {"key": "X-API-Key", "value": "{{accountKey}}"},
+          {"key": "X-Mailbox-Key", "value": "{{mailboxKey}}"}
+        ],
+        "url": "{{baseUrl}}/email/message/?direction=sent&id=replace_with_message_id"
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,75 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MailBridgeAPI",
+    "version": "2026-10-13.1",
+    "description": "Connect an SMTP/IMAP mailbox once, then send email, read and search messages, monitor delivery and inspect mailbox activity through authenticated HTTP endpoints. Keep both API keys on your server."
+  },
+  "servers": [{"url": "https://api.mailbridgeapi.com"}],
+  "security": [{"AccountKey": [], "MailboxKey": []}],
+  "paths": {
+    "/health/": {
+      "get": {"summary": "Check API availability", "security": [], "responses": {"200": {"description": "Service status"}}}
+    },
+    "/sendemail/": {
+      "post": {"summary": "Send an email through the connected SMTP mailbox", "description": "When sent-copy archiving is enabled for the mailbox, a successful SMTP send is queued for asynchronous IMAP storage. Set skip_sent_copy to true to exclude this message unconditionally.", "security": [], "requestBody": {"required": true, "content": {"application/x-www-form-urlencoded": {"schema": {"$ref": "#/components/schemas/SendEmailPayload"}}}}, "responses": {"200": {"description": "Legacy send result. Check result.error and result.sent."}}}
+    },
+    "/getemail/": {
+      "get": {"summary": "Retrieve up to 30 messages directly from an IMAP folder", "security": [{"AccountKeyQuery": [], "MailboxKeyQuery": []}], "parameters": [{"$ref": "#/components/parameters/Folder"}, {"$ref": "#/components/parameters/Start"}], "responses": {"200": {"description": "Legacy IMAP message collection under result.emaillist"}}}
+    },
+    "/email/unsubscribed/": {
+      "get": {"summary": "List unsubscribe records", "security": [{"AccountKeyQuery": [], "MailboxKeyQuery": []}], "parameters": [{"name": "email", "in": "query", "schema": {"type": "string", "format": "email"}, "description": "Optional recipient filter"}], "responses": {"200": {"description": "Legacy unsubscribe collection under result.customer"}}}
+    },
+    "/mailbox/status/": {
+      "get": {"summary": "Inspect mailbox readiness without exposing credentials", "responses": {"200": {"description": "Mailbox, SMTP, IMAP and feature readiness", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Success"}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}}
+    },
+    "/mailbox/insights/": {
+      "get": {"summary": "Get a mailbox operational snapshot", "description": "Returns delivery reliability, received volume, latest activity and the most recent send error for one authenticated mailbox.", "parameters": [{"name": "days", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 90, "default": 30}}], "responses": {"200": {"description": "Operational mailbox insights"}, "401": {"$ref": "#/components/responses/Unauthorized"}}}
+    },
+    "/email/sent/": {
+      "get": {"summary": "List sent email activity", "parameters": [{"$ref": "#/components/parameters/Page"}, {"$ref": "#/components/parameters/PerPage"}, {"name": "status", "in": "query", "schema": {"type": "string", "enum": ["all", "success", "error"], "default": "all"}}, {"name": "recipient", "in": "query", "schema": {"type": "string", "format": "email"}}, {"$ref": "#/components/parameters/From"}, {"$ref": "#/components/parameters/To"}, {"name": "source", "in": "query", "schema": {"type": "string"}}, {"$ref": "#/components/parameters/IncludeBody"}], "responses": {"200": {"description": "Paginated sent email activity"}, "401": {"$ref": "#/components/responses/Unauthorized"}}}
+    },
+    "/email/received/": {
+      "get": {"summary": "List received email activity stored by MailBridgeAPI", "description": "Standard mailboxes use numbered pages. Gmail responses can provide a next_page_token for provider pagination.", "parameters": [{"$ref": "#/components/parameters/Page"}, {"$ref": "#/components/parameters/PerPage"}, {"name": "sender", "in": "query", "schema": {"type": "string", "format": "email"}}, {"$ref": "#/components/parameters/From"}, {"$ref": "#/components/parameters/To"}, {"$ref": "#/components/parameters/IncludeBody"}, {"name": "page_token", "in": "query", "schema": {"type": "string", "maxLength": 1000}, "description": "Gmail continuation token returned by the previous response."}], "responses": {"200": {"description": "Paginated received email activity"}, "401": {"$ref": "#/components/responses/Unauthorized"}}}
+    },
+    "/email/message/": {
+      "get": {"summary": "Get one sent or received message by its MailBridgeAPI id", "parameters": [{"name": "direction", "in": "query", "required": true, "schema": {"type": "string", "enum": ["sent", "received"]}}, {"name": "id", "in": "query", "required": true, "schema": {"type": "string"}}], "responses": {"200": {"description": "Message detail"}, "404": {"description": "Message not found"}}}
+    },
+    "/email/search/": {
+      "get": {"summary": "Search sent and received email metadata", "description": "Searches message ids, subjects and sender or recipient addresses. Message bodies remain available only through the detail endpoint.", "parameters": [{"name": "query", "in": "query", "required": true, "schema": {"type": "string", "minLength": 2, "maxLength": 120}}, {"name": "direction", "in": "query", "schema": {"type": "string", "enum": ["all", "sent", "received"], "default": "all"}}, {"$ref": "#/components/parameters/Page"}, {"$ref": "#/components/parameters/PerPage"}, {"$ref": "#/components/parameters/From"}, {"$ref": "#/components/parameters/To"}], "responses": {"200": {"description": "Unified paginated email search results"}, "401": {"$ref": "#/components/responses/Unauthorized"}}}
+    },
+    "/email/activity/": {
+      "get": {"summary": "Get sent, accepted, error and received totals with a daily series", "description": "Also returns the success rate, leading request sources and most frequent error reasons.", "parameters": [{"name": "days", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 90, "default": 30}}], "responses": {"200": {"description": "Totals, daily activity and diagnostic breakdowns"}}}
+    },
+    "/email/validate/": {
+      "post": {"summary": "Validate a send payload and SMTP readiness without sending email", "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ValidateEmail"}}, "application/x-www-form-urlencoded": {"schema": {"$ref": "#/components/schemas/ValidateEmail"}}}}, "responses": {"200": {"description": "Validation errors and warnings. data.sends_email is always false."}}}
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AccountKey": {"type": "apiKey", "in": "header", "name": "X-API-Key", "description": "Account API key. Authorization: Bearer is also supported by the new endpoints."},
+      "MailboxKey": {"type": "apiKey", "in": "header", "name": "X-Mailbox-Key", "description": "API key of the mailbox selected for the request."},
+      "AccountKeyQuery": {"type": "apiKey", "in": "query", "name": "apikey", "description": "Account API key used by the original endpoints."},
+      "MailboxKeyQuery": {"type": "apiKey", "in": "query", "name": "apikeybox", "description": "Mailbox API key used by the original endpoints."}
+    },
+    "parameters": {
+      "Page": {"name": "page", "in": "query", "schema": {"type": "integer", "minimum": 1, "default": 1}},
+      "PerPage": {"name": "per_page", "in": "query", "schema": {"type": "integer", "minimum": 1, "maximum": 100, "default": 25}},
+      "From": {"name": "from", "in": "query", "schema": {"type": "string", "format": "date"}},
+      "To": {"name": "to", "in": "query", "schema": {"type": "string", "format": "date"}},
+      "IncludeBody": {"name": "include_body", "in": "query", "schema": {"type": "boolean", "default": false}, "description": "Include message bodies only when needed."},
+      "Folder": {"name": "mbox", "in": "query", "required": true, "schema": {"type": "string", "example": "INBOX"}},
+      "Start": {"name": "start", "in": "query", "schema": {"type": "integer", "minimum": 0, "default": 0}}
+    },
+    "schemas": {
+      "SendEmailPayload": {"type": "object", "required": ["apikey", "apikeybox", "recipient_email", "mail_subject", "mail_body"], "properties": {"apikey": {"type": "string", "description": "Account API key."}, "apikeybox": {"type": "string", "description": "Mailbox API key."}, "recipient_email": {"type": "string", "format": "email"}, "mail_subject": {"type": "string"}, "mail_body": {"type": "string"}, "format": {"type": "string", "enum": ["html", "text"], "default": "html"}, "sender_name": {"type": "string"}, "sender_email": {"type": "string", "format": "email"}, "reply_name": {"type": "string"}, "reply_email": {"type": "string", "format": "email"}, "email_cc1": {"type": "string", "format": "email"}, "email_cc2": {"type": "string", "format": "email"}, "email_cc3": {"type": "string", "format": "email"}, "charset": {"type": "string", "default": "UTF-8"}, "from_source": {"type": "string", "maxLength": 80, "description": "Stable identifier for the application or plugin that originated the message."}, "unsubscribe": {"type": "boolean"}, "skip_sent_copy": {"type": "boolean", "default": false, "description": "Set true (or 1 in form data) to prevent this message from being copied to the configured IMAP Sent folder, even when mailbox archiving is enabled."}, "mail_message_id": {"type": "string", "description": "Optional RFC Message-ID without surrounding angle brackets."}, "mail_in_reply_to": {"type": "string", "description": "Optional parent RFC Message-ID."}, "mail_references": {"type": "string", "description": "Optional space-separated RFC Message-ID values."}, "mail_auto_submitted": {"type": "string", "enum": ["auto-generated", "auto-replied"]}, "attachmentBase64_1": {"type": "string", "contentEncoding": "base64"}, "attachmentBase64_name_1": {"type": "string"}, "attachmentBase64_2": {"type": "string", "contentEncoding": "base64"}, "attachmentBase64_name_2": {"type": "string"}}},
+      "ValidateEmail": {"type": "object", "required": ["recipient_email", "mail_subject", "mail_body"], "properties": {"recipient_email": {"type": "string", "format": "email"}, "mail_subject": {"type": "string"}, "mail_body": {"type": "string", "maxLength": 1048576}, "format": {"type": "string", "enum": ["html", "text"], "default": "html"}}},
+      "Success": {"type": "object", "required": ["ok", "data", "meta"], "properties": {"ok": {"const": true}, "data": {"type": "object"}, "meta": {"$ref": "#/components/schemas/Meta"}}},
+      "Error": {"type": "object", "required": ["ok", "error", "meta"], "properties": {"ok": {"const": false}, "error": {"type": "object", "required": ["code", "message"], "properties": {"code": {"type": "string"}, "message": {"type": "string"}}}, "meta": {"$ref": "#/components/schemas/Meta"}}},
+      "Meta": {"type": "object", "properties": {"request_id": {"type": "string"}, "api_version": {"type": "string"}, "timestamp": {"type": "string", "format": "date-time"}}}
+    },
+    "responses": {
+      "Unauthorized": {"description": "Missing or invalid account/mailbox credentials", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    }
+  }
+}

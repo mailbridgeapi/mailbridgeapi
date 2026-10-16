@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+node_modules/
+vendor/
+__pycache__/
+*.py[cod]
+*.log
+
