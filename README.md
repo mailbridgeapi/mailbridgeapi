@@ -110,6 +110,16 @@ Ready-to-run examples are available for:
 - [Python 3.9+](examples/python/send_email.py)
 - [Postman](postman/MailBridgeAPI.postman_collection.json)
 
+## Official libraries and integrations
+
+| Repository | Purpose |
+| --- | --- |
+| [mailbridgeapi/php](https://github.com/mailbridgeapi/php) | PHP 7.4+ client |
+| [mailbridgeapi/nodejs](https://github.com/mailbridgeapi/nodejs) | JavaScript and TypeScript client for Node.js 18+ |
+| [mailbridgeapi/python](https://github.com/mailbridgeapi/python) | Dependency-free Python 3.9+ client |
+| [mailbridgeapi/examples](https://github.com/mailbridgeapi/examples) | cURL, PHP, Node.js, Python, Laravel, Express, and Flask examples |
+| [mailbridgeapi/wordpress-plugin](https://github.com/mailbridgeapi/wordpress-plugin) | WordPress and WooCommerce email delivery plugin |
+
 ## Gmail support
 
 Gmail mailboxes use OAuth 2.0. Complete the Google authorization flow in the MailBridgeAPI dashboard; your applications still use the same MailBridgeAPI keys and endpoints. No Google refresh token belongs in your project. See [Gmail OAuth](docs/gmail-oauth.md).
