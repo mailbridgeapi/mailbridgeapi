@@ -1,0 +1,11 @@
+extends:
+  - recommended
+
+rules:
+  # MailBridgeAPI's canonical production routes intentionally end in a slash.
+  no-path-trailing-slash: off
+  # Original compatibility endpoints report some validation failures in a
+  # stable JSON body with HTTP 200, so a forced 4XX response would be inaccurate.
+  operation-4xx-response: off
+  operation-operationId: error
+
