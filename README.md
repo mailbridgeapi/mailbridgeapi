@@ -1,4 +1,8 @@
-# MailBridgeAPI
+<p align="center">
+  <img src="assets/logo-mark.png" alt="MailBridgeAPI logo" width="128">
+</p>
+
+<h1 align="center">MailBridgeAPI</h1>
 
 **Turn your own email mailbox into a secure, programmable API.**
 
